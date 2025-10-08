@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko SWEET - Edukasi Matematika</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: linear-gradient(135deg, #ffccd5, #c9f5ff);
+        }
+        .shelf {
+            background: linear-gradient(to bottom, #d4a574, #b8864e);
+            border-bottom: 8px solid #8b5a2b;
+        }
+        .product {
+            transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+        }
+        .product:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+        .receipt {
+            background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .cart-item {
+            animation: fadeIn 0.3s ease-in;
+        }
+        .input-correct {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+        .input-incorrect {
+            border-color: #ef4444;
+            background-color: #fef2f2;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes removeProduct {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(0); opacity: 0; }
+        }
+        @keyframes moneyUpdate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <!-- Modal Input Uang Awal -->
+    <div id="initial-money-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-bold text-pink-600 mb-2">Selamat Datang!</h2>
+                <p class="text-lg text-purple-700">Di Toko SWEET - Belajar Berhitung</p>
+            </div>
+            <div class="mb-6">
+                <p class="text-gray-700 mb-4">Masukkan jumlah uang yang kamu miliki untuk berbelanja:</p>
+                <input type="number" id="initial-money-input" placeholder="Contoh: 50000" 
+                       class="w-full border-2 border-purple-300 rounded-lg p-4 text-center text-xl font-bold">
+            </div>
+            <button id="start-shopping" class="w-full bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-lg font-bold text-xl transition duration-200">
+                Mulai Berbelanja!
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto hidden" id="main-content">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-pink-600 mb-2 drop-shadow-md">Toko SWEET</h1>
+            <p class="text-xl text-purple-700">Belajar Berhitung dengan Berbelanja!</p>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Bagian Kiri: Menu Harga & Info Uang -->
+            <div class="lg:w-1/5">
+                <div class="bg-white rounded-xl shadow-xl p-6 sticky top-4">
+                    <h2 class="text-2xl font-bold text-purple-700 mb-6 text-center">Menu Harga</h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Item Susu -->
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center mr-3">
+                                    <img src="makanan/susu.png" alt="Susu" class="w-6 h-6">
+                                </div>
+                                <span class="font-medium text-blue-800">Susu</span>
+                            </div>
+                            <span class="font-bold text-blue-600">Rp 6.000</span>
+                        </div>
+                        
+                        <!-- Item Keripik -->
+                        <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-orange-200 rounded-full flex items-center justify-center mr-3">
+                                    <img src="makanan/keripik.png" alt="Keripik" class="w-6 h-6">
+                                </div>
+                                <span class="font-medium text-orange-800">Keripik</span>
+                            </div>
+                            <span class="font-bold text-orange-600">Rp 4.000</span>
+                        </div>
+                        
+                        <!-- Item Teh -->
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center mr-3">
+                                    <img src="makanan/teh.png" alt="Teh" class="w-6 h-6">
+                                </div>
+                                <span class="font-medium text-green-800">Teh</span>
+                            </div>
+                            <span class="font-bold text-green-600">Rp 3.000</span>
+                        </div>
+                        
+                        <!-- Item Permen -->
+                        <div class="flex items-center justify-between p-3 bg-pink-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-pink-200 rounded-full flex items-center justify-center mr-3">
+                                    <img src="makanan/permen.png" alt="Permen" class="w-6 h-6">
+                                </div>
+                                <span class="font-medium text-pink-800">Permen</span>
+                            </div>
+                            <span class="font-bold text-pink-600">Rp 5.000</span>
+                        </div>
+                        
+                        <!-- Item Roti -->
+                        <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-yellow-200 rounded-full flex items-center justify-center mr-3">
+                                    <img src="makanan/roti.png" alt="Roti" class="w-6 h-6">
+                                </div>
+                                <span class="font-medium text-yellow-800">Roti</span>
+                            </div>
+                            <span class="font-bold text-yellow-600">Rp 2.000</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Info Uang Siswa -->
+                    <div class="mt-8 p-4 bg-purple-50 rounded-lg">
+                        <h3 class="font-bold text-purple-700 mb-3">Uang Saya</h3>
+                        <div class="text-center">
+                            <span id="money-display" class="text-2xl font-bold text-purple-700">Rp 0</span>
+                        </div>
+                        <div class="mt-2 text-center">
+                            <span id="money-status" class="text-sm text-purple-600"></span>
+                        </div>
+                        <button id="change-money" class="w-full mt-3 bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-lg font-bold transition duration-200">
+                            Ubah Jumlah Uang
+                        </button>
+                    </div>
+                    
+                    <!-- Informasi Toko -->
+                    <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <h3 class="font-bold text-blue-700 mb-2">Cara Berbelanja</h3>
+                        <ol class="text-sm text-blue-600 list-decimal list-inside space-y-1">
+                            <li>Klik produk yang ingin dibeli</li>
+                            <li>Hitung total belanja di keranjang</li>
+                            <li>Isi total belanja menurut perhitunganmu</li>
+                            <li>Isi kembalian menurut perhitunganmu</li>
+                            <li>Cek apakah perhitunganmu benar</li>
+                            <li>Uang akan berkurang otomatis jika benar</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Tengah: Toko dan Rak -->
+            <div class="lg:w-3/5">
+                <!-- Rak Susu -->
+                <div class="mb-8">
+                    <div class="shelf p-4 rounded-lg shadow-lg">
+                        <div id="milk-shelf" class="grid grid-cols-5 gap-4">
+                            <!-- Item Susu - Hanya gambar -->
+                            <div class="product bg-blue-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Susu" data-price="6000">
+                                <div class="h-32 bg-blue-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/susu.png" alt="Susu" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-blue-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Susu" data-price="6000">
+                                <div class="h-32 bg-blue-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/susu.png" alt="Susu" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-blue-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Susu" data-price="6000">
+                                <div class="h-32 bg-blue-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/susu.png" alt="Susu" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-blue-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Susu" data-price="6000">
+                                <div class="h-32 bg-blue-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/susu.png" alt="Susu" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-blue-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Susu" data-price="6000">
+                                <div class="h-32 bg-blue-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/susu.png" alt="Susu" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rak Keripik -->
+                <div class="mb-8">
+                    <div class="shelf p-4 rounded-lg shadow-lg">
+                        <div id="chips-shelf" class="grid grid-cols-5 gap-4">
+                            <!-- Item Keripik - Hanya gambar -->
+                            <div class="product bg-orange-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Keripik" data-price="4000">
+                                <div class="h-32 bg-orange-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/keripik.png" alt="Keripik" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-orange-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Keripik" data-price="4000">
+                                <div class="h-32 bg-orange-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/keripik.png" alt="Keripik" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-orange-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Keripik" data-price="4000">
+                                <div class="h-32 bg-orange-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/keripik.png" alt="Keripik" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-orange-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Keripik" data-price="4000">
+                                <div class="h-32 bg-orange-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/keripik.png" alt="Keripik" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-orange-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Keripik" data-price="4000">
+                                <div class="h-32 bg-orange-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/keripik.png" alt="Keripik" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rak Teh -->
+                <div class="mb-8">
+                    <div class="shelf p-4 rounded-lg shadow-lg">
+                        <div id="tea-shelf" class="grid grid-cols-5 gap-4">
+                            <!-- Item Teh - Hanya gambar -->
+                            <div class="product bg-green-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Teh" data-price="3000">
+                                <div class="h-32 bg-green-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/teh.png" alt="Teh" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-green-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Teh" data-price="3000">
+                                <div class="h-32 bg-green-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/teh.png" alt="Teh" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-green-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Teh" data-price="3000">
+                                <div class="h-32 bg-green-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/teh.png" alt="Teh" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-green-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Teh" data-price="3000">
+                                <div class="h-32 bg-green-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/teh.png" alt="Teh" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-green-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Teh" data-price="3000">
+                                <div class="h-32 bg-green-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/teh.png" alt="Teh" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rak Permen -->
+                <div class="mb-8">
+                    <div class="shelf p-4 rounded-lg shadow-lg">
+                        <div id="candy-shelf" class="grid grid-cols-5 gap-4">
+                            <!-- Item Permen - Hanya gambar -->
+                            <div class="product bg-pink-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Permen" data-price="5000">
+                                <div class="h-32 bg-pink-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/permen.png" alt="Permen" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-pink-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Permen" data-price="5000">
+                                <div class="h-32 bg-pink-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/permen.png" alt="Permen" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-pink-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Permen" data-price="5000">
+                                <div class="h-32 bg-pink-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/permen.png" alt="Permen" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-pink-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Permen" data-price="5000">
+                                <div class="h-32 bg-pink-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/permen.png" alt="Permen" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-pink-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Permen" data-price="5000">
+                                <div class="h-32 bg-pink-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/permen.png" alt="Permen" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rak Roti -->
+                <div class="mb-8">
+                    <div class="shelf p-4 rounded-lg shadow-lg">
+                        <div id="bread-shelf" class="grid grid-cols-5 gap-4">
+                            <!-- Item Roti - Hanya gambar -->
+                            <div class="product bg-yellow-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Roti" data-price="2000">
+                                <div class="h-32 bg-yellow-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/roti.png" alt="Roti" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-yellow-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Roti" data-price="2000">
+                                <div class="h-32 bg-yellow-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/roti.png" alt="Roti" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-yellow-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Roti" data-price="2000">
+                                <div class="h-32 bg-yellow-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/roti.png" alt="Roti" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-yellow-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Roti" data-price="2000">
+                                <div class="h-32 bg-yellow-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/roti.png" alt="Roti" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                            <div class="product bg-yellow-100 p-3 rounded-lg text-center cursor-pointer" 
+                                 data-name="Roti" data-price="2000">
+                                <div class="h-32 bg-yellow-50 rounded-lg flex items-center justify-center mb-2 p-2">
+                                    <img src="makanan/roti.png" alt="Roti" class="w-full h-full object-contain">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Kanan: Kasir -->
+            <div class="lg:w-1/5">
+                <div class="bg-white rounded-xl shadow-xl p-6 sticky top-4">
+                    <h2 class="text-2xl font-bold text-purple-700 mb-6 text-center">Kasir Toko SWEET</h2>
+                    
+                    <!-- Keranjang Belanja -->
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold text-gray-700 mb-3">Keranjang Belanja</h3>
+                        <div id="cart" class="bg-gray-50 p-4 rounded-lg min-h-40 mb-4">
+                            <p id="empty-cart" class="text-gray-500 text-center">Keranjang masih kosong</p>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- Input Total Belanja (Siswa) -->
+                    <div class="mb-6 p-4 bg-yellow-50 rounded-lg">
+                        <h3 class="font-bold text-yellow-700 mb-3">Total Belanja (Menurut Kamu)</h3>
+                        <input type="number" id="student-total" placeholder="Isi total belanja" 
+                               class="w-full border border-yellow-300 rounded-lg p-3 text-center text-lg">
+                        <p class="text-xs text-yellow-600 mt-2 text-center">Jumlahkan harga semua barang di keranjang</p>
+                    </div>
+                    
+                    <!-- Input Kembalian (Siswa) -->
+                    <div class="mb-6 p-4 bg-green-50 rounded-lg">
+                        <h3 class="font-bold text-green-700 mb-3">Kembalian (Menurut Kamu)</h3>
+                        <input type="number" id="student-change" placeholder="Isi kembalian" 
+                               class="w-full border border-green-300 rounded-lg p-3 text-center text-lg">
+                        <p class="text-xs text-green-600 mt-2 text-center">Uang kamu - Total belanja</p>
+                    </div>
+                    
+                    <!-- Tombol Aksi -->
+                    <div class="flex flex-col gap-2 mb-6">
+                        <button id="check-total-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded-lg font-bold transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-calculator mr-2"></i> Cek Total Belanja
+                        </button>
+                        <button id="check-change-btn" class="bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-coins mr-2"></i> Cek Kembalian
+                        </button>
+                        <button id="finalize-btn" class="bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-lg font-bold transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-check-circle mr-2"></i> Selesaikan Belanja
+                        </button>
+                        <button id="clear-btn" class="bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-trash-alt mr-2"></i> Hapus Semua
+                        </button>
+                    </div>
+                    
+                    <!-- Struk -->
+                    <div class="receipt p-4 rounded-lg border-2 border-dashed border-gray-400">
+                        <h3 class="text-xl font-bold text-center mb-4">Hasil Perhitungan</h3>
+                        <div id="receipt-content" class="text-sm">
+                            <p class="text-center">Belum ada transaksi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data produk dan keranjang
+        let cart = [];
+        let total = 0;
+        let studentMoney = 0;
+        let originalProducts = [];
+        let transactionCompleted = false;
+        
+        // Inisialisasi event listeners setelah DOM siap
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tampilkan modal input uang di awal
+            document.getElementById('initial-money-modal').classList.remove('hidden');
+            document.getElementById('initial-money-input').focus();
+            
+            // Event listener untuk tombol mulai berbelanja
+            document.getElementById('start-shopping').addEventListener('click', startShopping);
+            
+            // Event listener untuk tombol ubah uang
+            document.getElementById('change-money').addEventListener('click', changeMoney);
+            
+            // Event listener untuk produk (setelah modal ditutup)
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.product') && !transactionCompleted) {
+                    const product = e.target.closest('.product');
+                    const name = product.getAttribute('data-name');
+                    const price = parseInt(product.getAttribute('data-price'));
+                    addToCart(name, price, product);
+                }
+            });
+            
+            // Event listener untuk tombol cek total belanja
+            document.getElementById('check-total-btn').addEventListener('click', checkTotal);
+            
+            // Event listener untuk tombol cek kembalian
+            document.getElementById('check-change-btn').addEventListener('click', checkChange);
+            
+            // Event listener untuk tombol selesaikan belanja
+            document.getElementById('finalize-btn').addEventListener('click', finalizeTransaction);
+            
+            // Event listener untuk tombol hapus
+            document.getElementById('clear-btn').addEventListener('click', clearCart);
+            
+            // Event listener untuk validasi real-time
+            document.getElementById('student-total').addEventListener('input', validateTotal);
+            document.getElementById('student-change').addEventListener('input', validateChange);
+            
+            // Simpan status awal produk untuk restock
+            saveOriginalProducts();
+        });
+
+        // Mulai berbelanja
+        function startShopping() {
+            const moneyInput = document.getElementById('initial-money-input');
+            studentMoney = parseInt(moneyInput.value) || 0;
+            
+            if (studentMoney <= 0) {
+                alert('Masukkan jumlah uang yang valid!');
+                return;
+            }
+            
+            // Sembunyikan modal, tampilkan konten utama
+            document.getElementById('initial-money-modal').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            
+            // Update tampilan uang
+            updateMoneyDisplay();
+        }
+
+        // Update tampilan uang dengan animasi
+        function updateMoneyDisplay() {
+            const moneyDisplay = document.getElementById('money-display');
+            const moneyStatus = document.getElementById('money-status');
+            
+            moneyDisplay.textContent = `Rp ${studentMoney.toLocaleString('id-ID')}`;
+            
+            // Animasi update uang
+            moneyDisplay.style.animation = 'moneyUpdate 0.5s ease-in-out';
+            setTimeout(() => {
+                moneyDisplay.style.animation = '';
+            }, 500);
+            
+            // Update status uang
+            if (transactionCompleted) {
+                moneyStatus.textContent = '✓ Transaksi selesai';
+                moneyStatus.className = 'text-sm text-green-600 font-bold';
+            } else if (cart.length > 0) {
+                moneyStatus.textContent = 'Belanja aktif';
+                moneyStatus.className = 'text-sm text-blue-600';
+            } else {
+                moneyStatus.textContent = 'Siap berbelanja';
+                moneyStatus.className = 'text-sm text-purple-600';
+            }
+        }
+
+        // Ubah jumlah uang
+        function changeMoney() {
+            if (transactionCompleted) {
+                alert('Transaksi sudah selesai. Silakan hapus semua untuk memulai kembali.');
+                return;
+            }
+            
+            const newMoney = prompt('Masukkan jumlah uang baru:', studentMoney);
+            if (newMoney !== null) {
+                studentMoney = parseInt(newMoney) || 0;
+                if (studentMoney > 0) {
+                    updateMoneyDisplay();
+                    alert('Jumlah uang berhasil diubah!');
+                } else {
+                    alert('Masukkan jumlah uang yang valid!');
+                }
+            }
+        }
+
+        // Simpan status awal produk
+        function saveOriginalProducts() {
+            const products = document.querySelectorAll('.product');
+            originalProducts = Array.from(products).map(product => {
+                return {
+                    name: product.getAttribute('data-name'),
+                    price: parseInt(product.getAttribute('data-price')),
+                    parentId: product.parentElement.id,
+                    html: product.outerHTML
+                };
+            });
+        }
+
+        // Fungsi untuk menambahkan item ke keranjang
+        function addToCart(name, price, productElement) {
+            if (transactionCompleted) {
+                alert('Transaksi sudah selesai. Silakan hapus semua untuk memulai kembali.');
+                return;
+            }
+            
+            // Hapus pesan keranjang kosong jika ada
+            const emptyCartElement = document.getElementById('empty-cart');
+            if (emptyCartElement) {
+                emptyCartElement.style.display = 'none';
+            }
+            
+            // Cek apakah item sudah ada di keranjang
+            const existingItemIndex = cart.findIndex(item => item.name === name);
+            
+            if (existingItemIndex !== -1) {
+                // Jika item sudah ada, tambahkan kuantitas
+                cart[existingItemIndex].quantity += 1;
+                cart[existingItemIndex].subtotal += price;
+            } else {
+                // Jika item belum ada, tambahkan item baru
+                cart.push({
+                    name: name,
+                    price: price,
+                    quantity: 1,
+                    subtotal: price
+                });
+            }
+            
+            total += price;
+            
+            // Update tampilan keranjang
+            updateCartDisplay();
+            
+            // Hapus produk dari rak dengan animasi
+            if (productElement) {
+                productElement.style.animation = 'removeProduct 0.5s forwards';
+                setTimeout(() => {
+                    productElement.remove();
+                }, 500);
+            }
+        }
+
+        // Fungsi untuk memperbarui tampilan keranjang
+        function updateCartDisplay() {
+            const cartElement = document.getElementById('cart');
+            const totalElement = document.getElementById('total');
+            const emptyCartElement = document.getElementById('empty-cart');
+            
+            // Kosongkan keranjang
+            cartElement.innerHTML = '';
+            
+            // Tambahkan setiap item ke keranjang
+            cart.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'cart-item flex justify-between items-center py-2 border-b border-gray-200';
+                itemElement.innerHTML = `
+                    <div class="flex-1">
+                        <span class="font-medium">${item.name}</span>
+                        <span class="text-sm text-gray-500 ml-2">x${item.quantity}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="mr-4">Rp ${item.subtotal.toLocaleString('id-ID')}</span>
+                        <button class="remove-item text-red-500 hover:text-red-700" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                cartElement.appendChild(itemElement);
+            });
+            
+            // Tambahkan event listener untuk tombol hapus item
+            const removeButtons = document.querySelectorAll('.remove-item');
+            removeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!transactionCompleted) {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        removeFromCart(index);
+                    }
+                });
+            });
+            
+            // Update total aktual
+            if (totalElement) {
+                totalElement.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+            }
+            
+            // Tampilkan pesan keranjang kosong jika tidak ada item
+            if (cart.length === 0 && emptyCartElement) {
+                emptyCartElement.style.display = 'block';
+                cartElement.appendChild(emptyCartElement);
+            }
+            
+            // Update status uang
+            updateMoneyDisplay();
+        }
+
+        // Fungsi untuk menghapus item dari keranjang
+        function removeFromCart(index) {
+            total -= cart[index].subtotal;
+            cart.splice(index, 1);
+            updateCartDisplay();
+        }
+
+        // Fungsi untuk mengosongkan keranjang
+        function clearCart() {
+            cart = [];
+            total = 0;
+            transactionCompleted = false;
+            updateCartDisplay();
+            
+            // Reset input fields
+            document.getElementById('student-total').value = '';
+            document.getElementById('student-change').value = '';
+            
+            // Reset validasi
+            document.getElementById('student-total').classList.remove('input-correct', 'input-incorrect');
+            document.getElementById('student-change').classList.remove('input-correct', 'input-incorrect');
+            
+            // Reset struk
+            document.getElementById('receipt-content').innerHTML = '<p class="text-center">Belum ada transaksi</p>';
+            
+            // Restock produk
+            restockProducts();
+            
+            // Update status uang
+            updateMoneyDisplay();
+            
+            alert('Keranjang berhasil dikosongkan! Silakan mulai belanja lagi.');
+        }
+
+        // Validasi total belanja (siswa)
+        function validateTotal() {
+            const studentTotal = parseInt(document.getElementById('student-total').value) || 0;
+            const totalInput = document.getElementById('student-total');
+            
+            if (studentTotal === total && total > 0) {
+                totalInput.classList.remove('input-incorrect');
+                totalInput.classList.add('input-correct');
+                return true;
+            } else {
+                totalInput.classList.remove('input-correct');
+                totalInput.classList.add('input-incorrect');
+                return false;
+            }
+        }
+
+        // Validasi kembalian (siswa)
+        function validateChange() {
+            const studentChange = parseInt(document.getElementById('student-change').value) || 0;
+            const expectedChange = studentMoney - total;
+            const changeInput = document.getElementById('student-change');
+            
+            if (studentChange === expectedChange && studentMoney >= total) {
+                changeInput.classList.remove('input-incorrect');
+                changeInput.classList.add('input-correct');
+                return true;
+            } else {
+                changeInput.classList.remove('input-correct');
+                changeInput.classList.add('input-incorrect');
+                return false;
+            }
+        }
+
+        // Cek total belanja
+        function checkTotal() {
+            if (validateTotal()) {
+                alert('Selamat! Perhitungan total belanja kamu benar! 🎉');
+            } else {
+                alert('Perhitungan total belanja masih salah. Coba lagi! 💪');
+            }
+        }
+
+        // Cek kembalian
+        function checkChange() {
+            if (validateChange()) {
+                alert('Hebat! Perhitungan kembalian kamu benar! 🎉');
+            } else {
+                alert('Perhitungan kembalian masih salah. Coba lagi! 💪');
+            }
+        }
+
+        // Selesaikan transaksi dan kurangi uang
+        function finalizeTransaction() {
+            const isTotalCorrect = validateTotal();
+            const isChangeCorrect = validateChange();
+            
+            if (isTotalCorrect && isChangeCorrect) {
+                // Kurangi uang siswa
+                const spentMoney = total;
+                studentMoney -= spentMoney;
+                
+                // Tandai transaksi selesai
+                transactionCompleted = true;
+                
+                // Update tampilan uang
+                updateMoneyDisplay();
+                
+                // Generate struk
+                generateReceipt(true);
+                
+                alert(`Selamat! Semua perhitunganmu benar! 🎉\nUang kamu berkurang Rp ${spentMoney.toLocaleString('id-ID')}`);
+            } else {
+                generateReceipt(false);
+                alert('Perhitunganmu masih ada yang salah. Cek kembali total belanja dan kembalian! 💪');
+            }
+        }
+
+        // Buat struk pembayaran
+        function generateReceipt(success) {
+            const studentTotal = parseInt(document.getElementById('student-total').value) || 0;
+            const studentChange = parseInt(document.getElementById('student-change').value) || 0;
+            const actualChange = studentMoney - total;
+            
+            const receiptContent = document.getElementById('receipt-content');
+            let receiptHTML = `
+                <div class="text-center mb-4">
+                    <p class="font-bold">TOKO SWEET</p>
+                    <p>${success ? 'Transaksi Berhasil!' : 'Hasil Perhitunganmu'}</p>
+                    <p class="text-xs mt-2">${new Date().toLocaleString('id-ID')}</p>
+                </div>
+                <div class="border-t border-b border-gray-400 py-2 mb-2">
+            `;
+            
+            cart.forEach(item => {
+                receiptHTML += `
+                    <div class="flex justify-between text-sm">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>Rp ${item.subtotal.toLocaleString('id-ID')}</span>
+                    </div>
+                `;
+            });
+            
+            receiptHTML += `
+                </div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Total Aktual</span>
+                    <span>Rp ${total.toLocaleString('id-ID')}</span>
+                </div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Total Kamu</span>
+                    <span>Rp ${studentTotal.toLocaleString('id-ID')}</span>
+                </div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Uang Dikeluarkan</span>
+                    <span>Rp ${total.toLocaleString('id-ID')}</span>
+                </div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Kembalian Aktual</span>
+                    <span>Rp ${actualChange.toLocaleString('id-ID')}</span>
+                </div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Kembalian Kamu</span>
+                    <span>Rp ${studentChange.toLocaleString('id-ID')}</span>
+                </div>
+                <div class="mt-4 text-center text-xs">
+            `;
+            
+            if (success) {
+                receiptHTML += `
+                    <p class="text-green-600 font-bold mb-2">🎉 Selamat! Semua perhitunganmu benar!</p>
+                    <p class="text-green-600">Uang tersisa: Rp ${studentMoney.toLocaleString('id-ID')}</p>
+                `;
+            } else if (studentTotal === total && studentChange === actualChange) {
+                receiptHTML += `<p class="text-green-600 font-bold">Selamat! Semua perhitunganmu benar! 🎉</p>`;
+            } else if (studentTotal === total) {
+                receiptHTML += `<p class="text-yellow-600 font-bold">Total belanja benar, tapi kembalian masih salah. Coba lagi! 💪</p>`;
+            } else if (studentChange === actualChange) {
+                receiptHTML += `<p class="text-yellow-600 font-bold">Kembalian benar, tapi total belanja masih salah. Coba lagi! 💪</p>`;
+            } else {
+                receiptHTML += `<p class="text-red-600 font-bold">Perhitunganmu masih salah. Coba lagi! 💪</p>`;
+            }
+            
+            receiptHTML += `</div>`;
+            
+            if (receiptContent) {
+                receiptContent.innerHTML = receiptHTML;
+            }
+        }
+
+        // Fungsi untuk mengembalikan produk ke rak
+        function restockProducts() {
+            // Hapus semua produk yang tersisa
+            const products = document.querySelectorAll('.product');
+            products.forEach(product => product.remove());
+            
+            // Tambahkan kembali produk dari status awal
+            originalProducts.forEach(productData => {
+                const parentElement = document.getElementById(productData.parentId);
+                if (parentElement) {
+                    parentElement.innerHTML += productData.html;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
